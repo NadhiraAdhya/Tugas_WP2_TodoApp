@@ -1,0 +1,17 @@
+html {
+  /* CSS */
+  btn-custom {
+      background-color: #61b8b6; /* Warna latar belakang */
+      border-color: #61b8b6; /* Warna border */
+      color: #fff; /* Warna teks */
+  }
+
+  btn-custom:hover {
+      background-color: #d382a5; /* Warna latar belakang saat tombol dihover */
+      border-color: #d382a5; /* Warna border saat tombol dihover */
+      color: #fff; /* Warna teks saat tombol dihover */
+  }
+
+  height: 100%;
+  width: 100%;
+}
