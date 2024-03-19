@@ -62,110 +62,145 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
-      // Open IndexedDB database
-const request = indexedDB.open("todoDB", 1);
-let db;
+      <script>
+          // Fungsi untuk menambahkan todo ke IndexedDB
+          function addTodo() {
+              const titleInput = document.getElementById("title").value;
+              const descriptionInput = document.getElementById("description").value;
 
-request.onerror = function(event) {
-    console.error("IndexedDB error:", event.target.errorCode);
-};
+              // Validasi input
+              if (!titleInput || !descriptionInput) {
+                  alert("Please fill in both title and description.");
+                  return;
+              }
 
-request.onsuccess = function(event) {
-    db = event.target.result;
-    fetchTodos(); // Fetch todos when database is opened successfully
-};
+              addTodoToDB(titleInput, descriptionInput);
 
-request.onupgradeneeded = function(event) {
-    const db = event.target.result;
-    const objectStore = db.createObjectStore("todos", { keyPath: "id", autoIncrement: true });
-    objectStore.createIndex("title", "title", { unique: false });
-    objectStore.createIndex("description", "description", { unique: false });
-};
+              // Reset nilai input setelah disimpan
+              document.getElementById("title").value = "";
+              document.getElementById("description").value = "";
+          }
 
-function addTodoToDB(title, description) {
-    const transaction = db.transaction(["todos"], "readwrite");
-    const objectStore = transaction.objectStore("todos");
+          // Event listener untuk tombol "Save"
+          document.getElementById("button-todo").addEventListener("click", function(event) {
+              event.preventDefault(); // Hindari perilaku default tombol submit pada form
+              addTodo(); // Panggil fungsi untuk menambahkan todo
+          });
 
-    const todo = { title: title, description: description };
-    objectStore.add(todo);
+          // Event listener untuk tombol "Clear"
+          document.getElementById("button-clear").addEventListener("click", function(event) {
+              event.preventDefault(); // Hindari perilaku default tombol
+              // Reset nilai input
+              document.getElementById("title").value = "";
+              document.getElementById("description").value = "";
+          });
+      </script>
+       <script>
+           // Open IndexedDB database
+           const request = indexedDB.open("todoDB", 1);
+           let db;
 
-    transaction.oncomplete = function() {
-        console.log("Todo added to database.");
-        fetchTodos(); // Fetch updated todos after adding a new one
-    };
+           request.onerror = function(event) {
+               console.error("IndexedDB error:", event.target.errorCode);
+           };
 
-    transaction.onerror = function(event) {
-        console.error("Transaction error:", event.target.error);
-    };
-}
+           request.onsuccess = function(event) {
+               db = event.target.result;
+               fetchTodos(); // Fetch todos when database is opened successfully
+           };
 
-function fetchTodos() {
-    const transaction = db.transaction(["todos"], "readonly");
-    const objectStore = transaction.objectStore("todos");
-    const request = objectStore.getAll();
+           request.onupgradeneeded = function(event) {
+               const db = event.target.result;
+               const objectStore = db.createObjectStore("todos", { keyPath: "id", autoIncrement: true });
+               objectStore.createIndex("title", "title", { unique: false });
+               objectStore.createIndex("description", "description", { unique: false });
+           };
 
-    request.onsuccess = function(event) {
-        const todos = event.target.result;
-        displayTodos(todos);
-    };
+           function addTodoToDB(title, description) {
+               const transaction = db.transaction(["todos"], "readwrite");
+               const objectStore = transaction.objectStore("todos");
 
-    request.onerror = function(event) {
-        console.error("Error fetching todos:", event.target.error);
-    };
-}
+               const todo = { title: title, description: description };
+               objectStore.add(todo);
 
-function displayTodos(todos) {
-    const todoList = document.getElementById("todo-list");
-    todoList.innerHTML = ""; // Clear existing todo list
+               transaction.oncomplete = function() {
+                   console.log("Todo added to database.");
+                   fetchTodos(); // Fetch updated todos after adding a new one
+               };
 
-    todos.forEach(todo => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${todo.title}</td>
-            <td>${todo.description}</td>
-            <td class="action-buttons">
-                <button class="btn btn-primary">Edit</button>
-                <button class="btn btn-danger">Delete</button>
-            </td>
-        `;
-        todoList.appendChild(row);
-    });
-}
+               transaction.onerror = function(event) {
+                   console.error("Transaction error:", event.target.error);
+               };
+           }
 
-const todoForm = document.getElementById("todo-form");
+           function fetchTodos() {
+               const transaction = db.transaction(["todos"], "readonly");
+               const objectStore = transaction.objectStore("todos");
+               const request = objectStore.getAll();
 
-// Event listener for form submission
-todoForm.addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent default form submission behavior
+               request.onsuccess = function(event) {
+                   const todos = event.target.result;
+                   displayTodos(todos);
+               };
 
-    // Get input values
-    const titleInput = document.getElementById("title");
-    const descriptionInput = document.getElementById("description");
-    const title = titleInput.value;
-    const description = descriptionInput.value;
+               request.onerror = function(event) {
+                   console.error("Error fetching todos:", event.target.error);
+               };
+           }
 
-    // Check if both fields are filled
-    if (!title || !description) {
-        alert("Please fill in both title and description.");
-        return;
-    }
+           function displayTodos(todos) {
+               const todoList = document.getElementById("todo-list");
+               todoList.innerHTML = ""; // Clear existing todo list
 
-    // Add todo item to IndexedDB
-    addTodoToDB(title, description);
+               todos.forEach(todo => {
+                   const row = document.createElement("tr");
+                   row.innerHTML = `
+                       <td>${todo.title}</td>
+                       <td>${todo.description}</td>
+                       <td class="action-buttons">
+                           <button class="btn btn-primary">Edit</button>
+                           <button class="btn btn-danger">Delete</button>
+                       </td>
+                   `;
+                   todoList.appendChild(row);
+               });
+           }
 
-    // Clear input fields
-    titleInput.value = "";
-    descriptionInput.value = "";
-});
+           const todoForm = document.getElementById("todo-form");
 
-// Event listener for clearing input fields
-const buttonClear = document.getElementById("button-clear");
-buttonClear.addEventListener("click", function(event) {
-    event.preventDefault(); // Prevent default button behavior
+           // Event listener for form submission
+           todoForm.addEventListener("submit", function(event) {
+               event.preventDefault(); // Prevent default form submission behavior
 
-    // Clear input fields
-    const titleInput = document.getElementById("title");
-    const descriptionInput = document.getElementById("description");
-    titleInput.value = "";
-    descriptionInput.value = "";
-});
+               // Get input values
+               const titleInput = document.getElementById("title");
+               const descriptionInput = document.getElementById("description");
+               const title = titleInput.value;
+               const description = descriptionInput.value;
+
+               // Check if both fields are filled
+               if (!title || !description) {
+                   alert("Please fill in both title and description.");
+                   return;
+               }
+
+               // Add todo item to IndexedDB
+               addTodoToDB(title, description);
+
+               // Clear input fields
+               titleInput.value = "";
+               descriptionInput.value = "";
+           });
+
+           // Event listener for clearing input fields
+           const buttonClear = document.getElementById("button-clear");
+           buttonClear.addEventListener("click", function(event) {
+               event.preventDefault(); // Prevent default button behavior
+
+               // Clear input fields
+               const titleInput = document.getElementById("title");
+               const descriptionInput = document.getElementById("description");
+               titleInput.value = "";
+               descriptionInput.value = "";
+           });
+       </script>

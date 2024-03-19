@@ -27,12 +27,6 @@ request.onupgradeneeded = function(event) {
 
 function addTodoToDB(title, description) {
     const transaction = db.transaction(["todos"], "readwrite");
-    const objectStore = transaction.objectStore("todos");
-
-    const todo = { title: title, description: description };
-    objectStore.add(todo);
-
-    transaction.oncomplete = function() {
         console.log("Todo added to database.");
         fetchTodos(); // Fetch updated todos after adding a new one
     };
